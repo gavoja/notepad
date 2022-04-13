@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/gavoja/notepad#readme",
   "dependencies": {
-    "express": "^4.17.3"
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "lowdb": "^3.0.0"
   }
 }

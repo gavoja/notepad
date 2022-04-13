@@ -1,25 +1,99 @@
+import 'dotenv/config'
 import express from 'express'
+import { randomUUID } from 'crypto'
+
+import { Low, JSONFile } from 'lowdb'
+
+const adapter = new JSONFile(process.env.SAVEFILE)
+const db = new Low(adapter)
+
+// Initialise notes if they don't exist.
+async function init () {
+  // Read the data from the file.
+  await db.read()
+
+  // Set the data if not set initially.
+  db.data ||= { notes: [] }
+
+  // Write the file.
+  await db.write()
+}
 
 const app = express()
+
+// Always serialize body to object (assume JSON).
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send('TODO: Serve HTML.')
 })
 
+// List all the notes.
 app.get('/notes', (req, res) => {
-  res.send('TODO: List all the notes!')
+  res.send(db.data.notes)
 })
 
+// Add note.
 app.post('/notes', (req, res) => {
-  res.send('TODO: Add note!')
+  const note = {
+    id: randomUUID(),
+    title: req.body?.title,
+    text: req.body?.text
+  }
+
+  if (!note.title) {
+    res.statusCode = 400
+    res.send('Title is missing.')
+    return
+  }
+
+  db.data.notes.push(note)
+  db.write()
+
+  res.send('Note was added.')
 })
 
+// Update note.
 app.patch('/notes/:noteId', (req, res) => {
-  res.send('TODO: Update note!')
+  const id = req.params?.noteId
+  const index = db.data.notes.findIndex(note => note.id === id)
+
+  if (index === -1) {
+    res.statusCode = 400
+    res.send(`Note with id ${id} does not exist.`)
+    return
+  }
+
+  const oldTitle = db.data.notes[index].title
+  const newTitle = req.body?.title || oldTitle
+
+  db.data.notes[index].title = newTitle
+  db.data.notes[index].text = req.body?.text
+  db.write()
+
+  res.send(`Note with id ${id} was updated.`)
 })
 
+// Delete note.
 app.delete('/notes/:noteId', (req, res) => {
-  res.send('TODO: Delete note!')
+  console.log(1)
+  const id = req.params?.noteId
+  const index = db.data.notes.findIndex(note => note.id === id)
+
+  if (index === -1) {
+    res.statusCode = 400
+    res.send(`Note with id ${id} does not exist.`)
+    return
+  }
+
+  db.data.notes.splice(index, 1)
+  db.write()
+
+  res.send(`Note with id ${id} was deleted.`)
 })
 
-app.listen(3000)
+// Initialization.
+app.listen(3000, async () => {
+  await init()
+  console.log('The server is running.')
+})
