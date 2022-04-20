@@ -23,10 +23,7 @@ const app = express()
 
 // Always serialize body to object (assume JSON).
 app.use(express.json())
-
-app.get('/', (req, res) => {
-  res.send('TODO: Serve HTML.')
-})
+app.use('/', express.static('public'))
 
 // List all the notes.
 app.get('/notes', (req, res) => {
