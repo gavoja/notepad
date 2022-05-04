@@ -30,6 +30,20 @@ app.get('/notes', (req, res) => {
   res.send(db.data.notes)
 })
 
+// List all the notes.
+app.get('/notes/:noteId', (req, res) => {
+  const id = req.params?.noteId
+  const index = db.data.notes.findIndex(note => note.id === id)
+
+  if (index === -1) {
+    res.statusCode = 400
+    res.send(`Note with id ${id} does not exist.`)
+    return
+  }
+
+  res.send(db.data.notes[index])
+})
+
 // Add note.
 app.post('/notes', (req, res) => {
   const note = {
@@ -73,7 +87,6 @@ app.patch('/notes/:noteId', (req, res) => {
 
 // Delete note.
 app.delete('/notes/:noteId', (req, res) => {
-  console.log(1)
   const id = req.params?.noteId
   const index = db.data.notes.findIndex(note => note.id === id)
 
