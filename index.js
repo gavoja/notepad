@@ -1,7 +1,6 @@
 import 'dotenv/config'
 import express from 'express'
 import { randomUUID } from 'crypto'
-
 import { Low, JSONFile } from 'lowdb'
 
 const adapter = new JSONFile(process.env.SAVEFILE)
@@ -22,6 +21,21 @@ async function init () {
 const app = express()
 
 // Always serialize body to object (assume JSON).
+app.use((req, res, next) => {
+  const auth = (req.headers.authorization ?? '') // Basic <base64-encoded-credentials>
+    .split(' ') // ['Basic' '<base64-encoded-credentials>']
+    .pop() // '<base64 encoded credentials>'
+
+  const decoded = Buffer.from(auth, 'base64').toString() // 'user:pass'
+  const [user, pass] = decoded.split(':') // ['user', 'pass']
+
+  if (user === process.env.USER && pass === process.env.PASS) {
+    return next()
+  }
+
+  res.set('WWW-Authenticate', 'Basic realm="401"')
+  res.status(401).send('Invalid user or password.')
+})
 app.use(express.json())
 app.use('/', express.static('public'))
 
