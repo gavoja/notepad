@@ -2,7 +2,7 @@
   "name": "notepad",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
