@@ -1,4 +1,3 @@
-
 import knex from 'knex'
 
 let db
@@ -7,10 +6,18 @@ export async function init () {
   db = knex({
     client: process.env.DATABASE_CLIENT,
     connection: {
-      filename: process.env.DATABASE_URL
-    }
+      filename: process.env.DATABASE_URL, // SQLite only.
+      port: process.env.DATABSE_PORT,
+      host: process.env.DATABASE_HOST,
+      user: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASS,
+      database: process.env.DATABASE_NAME,
+      ssl: { rejectUnauthorized: false }
+    },
+    useNullAsDefault: true
   })
 
+  // Initialize notes table.
   try {
     await db.schema.createTable('notes', table => {
       table.increments('id')
@@ -19,7 +26,7 @@ export async function init () {
     })
   } catch (err) {
     console.log('The notes table is probabbly present.')
-    console.error(err)
+    console.log(err.message)
   }
 }
 

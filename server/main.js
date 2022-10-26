@@ -4,21 +4,28 @@ import { init, getNotes, getNote, addNote, deleteNote, updateNote } from './data
 
 const app = express()
 
-// app.use((req, res, next) => {
-//   const auth = (req.headers.authorization ?? '') // Basic <base64-encoded-credentials>
-//     .split(' ') // ['Basic' '<base64-encoded-credentials>']
-//     .pop() // '<base64 encoded credentials>'
+// Authentication handler.
+app.use((req, res, next) => {
+  // Skip if user/pass are not defined.
+  if (!process.env.USER || !process.env.PASS) {
+    return next()
+  }
 
-//   const decoded = Buffer.from(auth, 'base64').toString() // 'user:pass'
-//   const [user, pass] = decoded.split(':') // ['user', 'pass']
+  const auth = (req.headers.authorization ?? '') // Basic <base64-encoded-credentials>
+    .split(' ') // ['Basic' '<base64-encoded-credentials>']
+    .pop() // '<base64 encoded credentials>'
 
-//   if (user === process.env.USER && pass === process.env.PASS) {
-//     return next()
-//   }
+  const decoded = Buffer.from(auth, 'base64').toString() // 'user:pass'
+  const [user, pass] = decoded.split(':') // ['user', 'pass']
 
-//   res.set('WWW-Authenticate', 'Basic realm="401"')
-//   res.status(401).send('Invalid user or password.')
-// })
+  if (user === process.env.USER && pass === process.env.PASS) {
+    return next()
+  }
+
+  res.set('WWW-Authenticate', 'Basic realm="401"')
+  res.status(401).send('Invalid user or password.')
+})
+
 app.use(express.json()) // Always serialize body to object (assume JSON).
 app.use('/', express.static('public'))
 
@@ -66,7 +73,7 @@ app.delete('/notes/:noteId', async (req, res) => {
 })
 
 // Initialization.
-app.listen(3000, async () => {
+app.listen(process.env.PORT, async () => {
   await init()
   console.log('The server is running.')
 })

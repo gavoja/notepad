@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
+    "start": "node server/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +22,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "knex": "^2.1.0",
+    "pg": "^8.8.0",
     "sqlite3": "^5.0.8"
   }
 }
